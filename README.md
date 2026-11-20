@@ -53,13 +53,40 @@ while b != 0:
 
 Exact decimal values are scaled to integers before reduction. Irrational roots (such as non-exact square roots) fall back to decimal notation.
 
-## Features
+## Bonus Features
 
-- **Natural input parsing:** Supports standalone constants (`5`), omitted exponents (`4X`), implicit coefficients (`X^2`, `-X`), lowercase `x`, and unordered or duplicate terms.
-- **Intermediate steps:** Displays extracted coefficients, discriminant evaluation, square root, and root formulas.
-- **Irreducible fractions:** Formats rational real and complex solutions as simplified fractions (e.g., `-1/5 + 2i/5`).
-- **Input validation:** Rejects invalid syntax, negative or fractional exponents (`X^-2`, `X^1.5`), consecutive operators (`++`, `+-`), missing operators (`5 2 * X`), and `nan`/`inf` values.
-- **Clean reduced form:** Omits cancelled zero-coefficient terms while preserving `0 * X^0 = 0` when the full equation reduces to zero.
+### 1. Natural / Free-Form Input Parsing
+Instead of requiring the strict `a * X^p` syntax on every term, the parser (`parse_term`) handles standard algebraic notation:
+- Standalone constants without `* X^0` (e.g., `5` -> `5 * X^0`)
+- Degree 1 terms without `^1` or `*` (e.g., `4X` or `4 * X` -> `4 * X^1`)
+- Implicit `1` and `-1` coefficients (e.g., `X^2`, `-X`)
+- Case-insensitive variable (`x` or `X`), unordered terms, and duplicate exponents on the same side
+
+Example: `"5 + 4 * X + X^2 = X^2"` or `"-x + 3x^2 - 2 = 0"`.
+
+### 2. Intermediate Resolution Steps
+Before printing the final roots, `solve()` outputs each calculation step:
+- **Degree 1:** Isolating `X` and dividing by its coefficient.
+- **Degree 2:** Listing extracted coefficients (`a`, `b`, `c`), expanding $\Delta = b^2 - 4ac$, computing $\sqrt{\Delta}$ (or $\sqrt{|\Delta|}$), and showing the substituted root formula.
+
+### 3. Irreducible Fractions
+Both real and complex rational solutions are formatted as simplified fractions via `format_fraction()` and `ft_gcd()` instead of raw decimals:
+- Scales exact decimals to integers, moves the minus sign to the numerator, and divides by the GCD.
+- Simplifies denominators of `1` (e.g., `4/1` -> `4`, `1i` -> `i`) and formats complex fractions cleanly (e.g., `-1/5 + 2i/5`).
+- Automatically falls back to decimal output when a square root is irrational.
+
+### 4. Strict Syntax & Input Validation
+Invalid inputs are caught early with explicit error messages instead of crashing or silently misparsing:
+- Missing or multiple `=` signs, empty sides, and trailing operators (`5 * X^0 + = 0`)
+- Consecutive operators (`++`, `--`, `+-`, `-+`)
+- Negative or fractional exponents (`X^-2`, `X^1.5`)
+- Missing operators between digits (`5 2 * X = 0`) and misplaced `*` (`5 * 2 * X = 0`)
+- Non-finite floats (`nan`, `inf`) and invalid characters
+
+### 5. Cleaned Reduced Form
+`format_reduced_form()` filters out terms whose coefficients cancel out to `0` after reduction, keeping the output minimal while preserving `0 * X^0 = 0` when the entire equation reduces to zero.
+
+Example: `"5 + 4 * X + X^2 = X^2"` outputs `Reduced form: 5 * X^0 + 4 * X^1 = 0` instead of keeping `+ 0 * X^2`.
 
 ## Examples
 
